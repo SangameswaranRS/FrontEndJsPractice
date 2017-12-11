@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced Post</title>
+    <style>
+        td{
+            text-align: center;
+        }
+        table,tr,td{
+            border: 1px solid #ff776b;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+    <br>
+    Enter user name :
+    <br>
+    <input type="text" name="user_name" id="userNameInp"><br>
+    <br>
+    <br>
+    Enter password :
+    <br>
+    <input type="text" name="password" id="passwordInp">
+    <br>
+    <br>
+    <button id="saveBtn" onclick="buttonClickAction()">Save and continue</button>
+    <br>
+    <br>
+    <table id="requests" width="50%">
+    </table>
+</body>
+    <script>
+        var isAdminCredentialFlag=false;
+        var buttonClickAction=function () {
+            var userName=document.getElementById("userNameInp").value;
+            var password=document.getElementById("passwordInp").value;
+            if(userName === undefined || password === undefined){
+                alert('Enter a valid username and password')
+            }else{
+                checkIfAdminCredential(userName,password,function (err,status) {
+                   if(err===null && status ===true){
+                        //save data in cookie;
+                        setCookie('userName',userName,1);
+                        setCookie('password',password,1);
+                        //call post request.
+                        var API_URL="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/getAllBloodRequests";
+                        var postParam={
+                            userName : userName,
+                            password : password
+                        };
+                        var tableData="";
+                        tableData+="<tr>"+"<th>Request Id</th>"+"<th>Blood Group Id</th>"+"<th>PatientName</th>"+"<th>Contact</th>"+"</tr>";
+                        postRequestGenericFunction(API_URL,postParam,function (err,data) {
+                          if(err===null){
+                              //response success
+                              console.log(data.message);
+                              for(var i=0;i<data.message.length;i++){
+                                  tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ data.message[i].bloodId +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"</tr>";
+                              }
+                              document.getElementById('requests').innerHTML=tableData;
+                          }  else{
+                              alert('Request failed, try again');
+                          }
+                        });
+                   } else {
+                       alert('Not a Admin Credential');
+                   }
+                });
+            }
+        };
+        var checkIfAdminCredential=function (userName,password,callBack) {
+          var checkFirebaseApiUrl="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/checkFirebase";
+          var postParamJson={
+              userName :userName,
+              password :password
+          };
+          postRequestGenericFunction(checkFirebaseApiUrl,postParamJson,function (err,data) {
+             if(err === null && data.statusCode===200){
+                 isAdminCredentialFlag=true;
+                 console.log('sending true');
+                 callBack(null,true);
+                 return true;
+             } else {
+                 isAdminCredentialFlag=false;
+                 callBack(err,false);
+                 return false;
+             }
+          });
+
+
+        };
+        var postRequestGenericFunction=function (url,postParams,callBack) {
+            var postRequest=new XMLHttpRequest();
+            postRequest.responseType='json';
+            postRequest.onload=function () {
+                var status=postRequest.status;
+                if(status ===200){
+                    console.log('response success, callback');
+                    callBack(null,postRequest.response);
+                }else{
+                    callBack(postRequest.status,postRequest.response);
+                }
+            };
+            postRequest.open('POST',url,true);
+            postRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            postRequest.send(JSON.stringify(postParams));
+        };
+        var setCookie=function (cname,cvalue,exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays*24*60*60*1000));
+            var expires = "expires="+ d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        };
+        var getCookie=function (cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) === 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        };
+    var userName=getCookie('userName');
+    var password=getCookie('password');
+    console.log(userName);
+    console.log(password);
+    document.getElementById('userNameInp').value=userName;
+    document.getElementById('passwordInp').value=password;
+    </script>
+    <noscript>
+        Sorry your browser does not support javascript
+    </noscript>
+</html>

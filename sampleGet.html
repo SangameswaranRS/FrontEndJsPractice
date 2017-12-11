@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Sample GET</title>
+        <style>
+            td{
+                text-align: center;
+            }
+            table,th,tr{
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <table width="10%" id="table">
+        </table>
+    </body>
+    <script>
+        var getJson=function (url,callBack) {
+            var xhr=new XMLHttpRequest();
+            xhr.open('GET',url,true);
+            xhr.responseType='json';
+            xhr.onload=function () {
+              var statusCode =xhr.status;
+              if(statusCode === 200){
+                  callBack(null,xhr.response);
+              }else{
+                  callBack(xhr.status,xhr.response);
+              }
+            };
+            xhr.send();
+        };
+        var tableData="";
+        console.log("Calling Api");
+        var apiUrl='http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/getCentreLocation';
+        getJson(apiUrl,function (err,data) {
+            if(err===null){
+                   console.log(data.message);
+                   tableData+="<tr>"+"<th>centerId</th>"+"<th>centerName</th>"+"</tr>";
+                   for(var i=0;i<data.message.length;i++){
+                       tableData+="<tr>"+"<td>"+data.message[i].centreId+"</td>"+"<td>"+data.message[i].centreName+"</td>"+"</tr>";
+                   }
+                   document.getElementById("table").innerHTML=tableData;
+               } else {
+                   alert("GET request failed");
+               }
+            });
+
+    </script>
+</html>
