@@ -9,26 +9,75 @@
         th{
             align-content: center;
         }
+        .wrapper {
+            min-height: 100%;
+            height: auto;
+            margin: 0 auto -142px; /* the bottom margin is the negative value of the footer's height */
+        }
+        .footer, .push {
+            height: 142px; /* .push must be the same height as .footer */
+        }
     </style>
 </head>
 <body>
-    <br>
-    Enter user name :
-    <br>
-    <input type="text" name="user_name" id="userNameInp"><br>
-    <br>
-    <br>
-    Enter password :
-    <br>
-    <input type="text" name="password" id="passwordInp">
-    <br>
-    <br>
-    <button class="waves-effect waves-light btn green lighten-2" id="saveBtn" onclick="buttonClickAction()" style="margin: auto;display: block">Save and continue</button>
-    <br>
-    <br>
-    <div class="container">
+<nav>
+    <div class="nav-wrapper green lighten-2">
+        <a href="#" class="brand-logo">Udhira - Functional Frontend</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="advancedPost.html">Blood Requests</a></li>
+            <li><a href="index.html">User Info</a></li>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="input-field">
+        <input type="text" name="user_name" id="userNameInp" width="40">
+        <label for="userNameInp" id="l1"> User Name</label>
+    </div>
+    <div class="input-field">
+        <input type="text" name="password" id="passwordInp" width="40">
+        <label for="passwordInp" id="l2">password</label>
+    </div>
+</div>
+    <button class="waves-effect waves-light btn green lighten-2 hoverable" id="saveBtn" onclick="buttonClickAction()" style="margin: auto;display: block">Save and continue</button>
+<a class="btn-floating btn-large waves-effect waves-light red" onclick="deleteCookie()"><i class="material-icons">delete</i></a>
+<div align="center">
+<div class="preloader-wrapper big active" id="progressLoader" align="center">
+    <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+            <div class="circle"></div>
+        </div><div class="gap-patch">
+        <div class="circle"></div>
+    </div><div class="circle-clipper right">
+        <div class="circle"></div>
+    </div>
+    </div>
+</div>
+</div>
+<div class="container">
         <table id="requests" width= 20% class="striped highlight responsive-table"></table>
     </div>
+
+<div class="wrapper">
+<footer class="page-footer green lighten-2 ">
+    <div class="container">
+        <div class="row">
+            <div class="col l6 s12 ">
+                <h5 class="white-text">Udhira 2018</h5>
+            </div>
+        </div>
+    </div>
+    <div class="footer-copyright">
+        <div class="container">
+          Copyright 2017-2018 NCC Army Tech Team. All Rights Reserved.
+        </div>
+    </div>
+</footer>
+    <div class="push"></div>
+</div>
+<div class="footer"></div>
 </body>
     <script>
         var isAdminCredentialFlag=false;
@@ -50,15 +99,16 @@
                             password : password
                         };
                         var tableData="";
-                        tableData+="<tr>"+"<th>Request Id</th>"+"<th>Blood Group Id</th>"+"<th>PatientName</th>"+"<th>Contact</th>"+"</tr>";
+                        tableData+="<tr>"+"<th>Request Id</th>"+"<th>Blood Group Id</th>"+"<th>PatientName</th>"+"<th>Contact</th>"+"<th>Hospital </th>"+"</tr>";
                         postRequestGenericFunction(API_URL,postParam,function (err,data) {
                           if(err===null){
                               //response success
                               console.log(data.message);
                               for(var i=0;i<data.message.length;i++){
-                                  tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ data.message[i].bloodId +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"</tr>";
+                                  tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ data.message[i].bloodId +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"<td>"+ data.message[i].hospital+"</td>"+"</tr>";
                               }
                               document.getElementById('requests').innerHTML=tableData;
+                              document.getElementById('progressLoader').style.display="none";
                           }  else{
                               alert('Request failed, try again');
                           }
@@ -87,8 +137,6 @@
                  return false;
              }
           });
-
-
         };
         var postRequestGenericFunction=function (url,postParams,callBack) {
             var postRequest=new XMLHttpRequest();
@@ -127,13 +175,31 @@
             }
             return "";
         };
+        var deleteCookie=function () {
+          setCookie('userName',"",0);
+          setCookie('password',"",0);
+          alert('Cookies Related to this site has been deleted successfully')
+        };
     var userName=getCookie('userName');
     var password=getCookie('password');
     console.log(userName);
     console.log(password);
-    document.getElementById('userNameInp').value=userName;
-    document.getElementById('passwordInp').value=password;
+    document.getElementById('userNameInp').value = userName;
+    document.getElementById('passwordInp').value = password;
+    if(userName.length>0 && password.length >0){
+        document.getElementById('userNameInp').style.display="none";
+        document.getElementById('passwordInp').style.display="none";
+        document.getElementById('saveBtn').style.display="none";
+        document.getElementById('l1').style.display="none";
+        document.getElementById('l2').style.display="none";
+        buttonClickAction();
+
+    }else {
+        //document.getElementById('userNameInp').value = userName;
+        //document.getElementById('passwordInp').value = password;
+    }
     </script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/materialize.min.js"></script>
     <noscript>
         Sorry your browser does not support javascript
