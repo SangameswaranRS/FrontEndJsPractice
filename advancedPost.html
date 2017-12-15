@@ -38,7 +38,7 @@
         <label for="userNameInp" id="l1"> User Name</label>
     </div>
     <div class="input-field">
-        <input type="text" name="password" id="passwordInp" width="40">
+        <input type="password" name="password" id="passwordInp" width="40">
         <label for="passwordInp" id="l2">password</label>
     </div>
 </div>
@@ -110,7 +110,7 @@
                                        //response success
                                        console.log(data.message);
                                        for(var i=0;i<data.message.length;i++){
-                                           tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ bloodGroupData[data.message[i].bloodId].bloodGroup +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"<td>"+ data.message[i].hospital+"</td>"+"</tr>";
+                                           tableData+="<tr onclick='handleTableClick(this.innerHTML)'>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ bloodGroupData[data.message[i].bloodId].bloodGroup +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"<td>"+ data.message[i].hospital+"</td>"+"</tr>";
                                        }
                                        document.getElementById('requests').innerHTML=tableData;
                                        document.getElementById('progressLoader').style.display="none";
@@ -155,6 +155,25 @@
                } else{
                    alert('Something went wrong, Try again!');
                    callBack('error',response.message);
+               }
+            });
+        };
+        var handleTableClick=function (value) {
+          console.log('Inner HTML : '+value);
+          console.log('Check Access'+value[4]+value[5]);
+          var requestId=value[4]+value[5];
+          var postParams={
+              requestId : requestId,
+              status : 1
+          };
+          Materialize.toast('Updating request status to satisfied',4000);
+          console.log("Post Params"+postParams);
+          var API_URL="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/postSatisfiedBloodRequest";
+            postRequestGenericFunction(API_URL,postParams,function (err,data) {
+               if(err===null){
+                   alert('updated status for requestId : '+postParams.requestId);
+               } else{
+                   alert('Failed to update status : '+data.message);
                }
             });
         };
