@@ -17,6 +17,7 @@
         .footer, .push {
             height: 142px; /* .push must be the same height as .footer */
         }
+
     </style>
 </head>
 <body>
@@ -71,7 +72,7 @@
     </div>
     <div class="footer-copyright">
         <div class="container">
-          Copyright 2017-2018 NCC Army Tech Team. All Rights Reserved.
+          Copyright &copy; 2017-2018 NCC Army Tech Team. All Rights Reserved.
         </div>
     </div>
 </footer>
@@ -92,27 +93,35 @@
                         //save data in cookie;
                         setCookie('userName',userName,1);
                         setCookie('password',password,1);
-                        //call post request.
-                        var API_URL="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/getAllBloodRequests";
-                        var postParam={
-                            userName : userName,
-                            password : password
-                        };
-                        var tableData="";
-                        tableData+="<tr>"+"<th>Request Id</th>"+"<th>Blood Group Id</th>"+"<th>PatientName</th>"+"<th>Contact</th>"+"<th>Hospital </th>"+"</tr>";
-                        postRequestGenericFunction(API_URL,postParam,function (err,data) {
-                          if(err===null){
-                              //response success
-                              console.log(data.message);
-                              for(var i=0;i<data.message.length;i++){
-                                  tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ data.message[i].bloodId +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"<td>"+ data.message[i].hospital+"</td>"+"</tr>";
-                              }
-                              document.getElementById('requests').innerHTML=tableData;
-                              document.getElementById('progressLoader').style.display="none";
-                          }  else{
-                              alert('Request failed, try again');
-                          }
-                        });
+                        //call get request.
+                       getAllBloodGroups(function (err,bloodGroupData) {
+                           if(err===null){
+                               console.log("BloodGroup Json Array");
+                               console.log(bloodGroupData);
+                               var API_URL="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/getAllBloodRequests";
+                               var postParam={
+                                   userName : userName,
+                                   password : password
+                               };
+                               var tableData="";
+                               tableData+="<tr>"+"<th>Request Id</th>"+"<th>Blood Group Id</th>"+"<th>PatientName</th>"+"<th>Contact</th>"+"<th>Hospital </th>"+"</tr>";
+                               postRequestGenericFunction(API_URL,postParam,function (err,data) {
+                                   if(err===null){
+                                       //response success
+                                       console.log(data.message);
+                                       for(var i=0;i<data.message.length;i++){
+                                           tableData+="<tr>"+"<td>"+ data.message[i].requestId+"</td>"+"<td>"+ bloodGroupData[data.message[i].bloodId].bloodGroup +"</td>"+"<td>"+ data.message[i].patientName +"</td>"+"<td>"+ data.message[i].contactNumber +"</td>"+"<td>"+ data.message[i].hospital+"</td>"+"</tr>";
+                                       }
+                                       document.getElementById('requests').innerHTML=tableData;
+                                       document.getElementById('progressLoader').style.display="none";
+                                   }  else{
+                                       alert('Request failed, try again');
+                                   }
+                               });
+                           }else{
+
+                           }
+                       });
                    } else {
                        alert('Not a Admin Credential');
                    }
@@ -138,6 +147,17 @@
              }
           });
         };
+        var getAllBloodGroups=function (callBack) {
+            var API_URL="http://ec2-34-215-171-85.us-west-2.compute.amazonaws.com:443/server/api/getAllBloodGroups";
+            getRequestGenericFunction(API_URL,function (err,response) {
+               if(err===null){
+                   callBack(null,response.message);
+               } else{
+                   alert('Something went wrong, Try again!');
+                   callBack('error',response.message);
+               }
+            });
+        };
         var postRequestGenericFunction=function (url,postParams,callBack) {
             var postRequest=new XMLHttpRequest();
             postRequest.responseType='json';
@@ -153,6 +173,20 @@
             postRequest.open('POST',url,true);
             postRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             postRequest.send(JSON.stringify(postParams));
+        };
+        var getRequestGenericFunction=function (url,callBack) {
+          var getRequest=new XMLHttpRequest();
+          getRequest.responseType='json';
+          getRequest.open('GET',url,true);
+          getRequest.onload=function () {
+              var status=getRequest.status;
+              if(status===200){
+                  callBack(null,getRequest.response);
+              }else{
+                  callBack(getRequest.status,getRequest.response);
+              }
+          };
+          getRequest.send();
         };
         var setCookie=function (cname,cvalue,exdays) {
             var d = new Date();
